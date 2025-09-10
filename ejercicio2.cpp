@@ -9,14 +9,17 @@ using namespace std;
 int main()
 {
     // TODO
-    Hash nuevo = crear(103);
+    int N;
+    cin >> N;
+    Hash nuevo = crear(N*2);
     put(nuevo, "a", "b", "titu", 12);
-    put(nuevo, "a", "f", "titu2", 14);
-    put(nuevo, "b", "b", "titu", 12);
-    put(nuevo, "a", "f", "titu2", 14);
-    put(nuevo, "d", "b", "titu", 12);
-    put(nuevo, "a", "f", "titu2", 14);
-    
-
+    put(nuevo, "b", "f", "titu2", 14);
+    put(nuevo, "g", "b", "titu", 12);
+    put(nuevo, "y", "f", "titu2", 14);
+    put(nuevo, "o", "b", "titu", 12);
+    put(nuevo, "p", "f", "titu2", 14);
+    // get(nuevo, "a", "b");
+    // get(nuevo, "a", "g");
+    // get(nuevo, "b", "f");
     return 0;
 }
