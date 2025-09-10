@@ -155,8 +155,114 @@ void get(Hash A, string dom, string path){
 }
 
 void remove(Hash A, string dom, string path){
+    int h1 = hash3(dom) % (A->buckets-1); // [0 .. cantBuckets - 1]
+    int h2 = 1+(hashSec(dom) % (A->buckets-2)); //[1 .. cantBuckets - 1] Sacado de wikipedia, enlace de las diapos
+    if (h1 < 0) h1 += (A->buckets -1);
+    if (h2 < 0) h2 += (A->buckets -2);
+    int intento = 0;
+    int  pos = (h1 + h2*intento)%(A->buckets); 
+    while (A->tabla[pos] != NULL)
+    {
+      intento++;
+      if (A->tabla[pos]->dom == dom)
+      {
+        NodoHash* actual = A->tabla[pos];
+        NodoHash* ant = NULL;
+        while(actual!= NULL){
+          if (actual->path == path)
+          {
+            if (ant == NULL)
+            {
+              if (actual->sig == NULL)
+              {
+                //A->tabla[pos] = NULL;
+                actual->path   = "";
+                actual->titulo = "";
+                actual->tiempo = 0;
+              }
+              else 
+              {
+                A->tabla[pos] = actual ->sig;
+                delete actual;
+                
+              }
+            }
+            else{
+              ant->sig = actual->sig;
+              delete actual;
+              
+            }
+            return;
+          }
+          ant = actual;
+          actual = actual->sig;
+      
+        }
+        
+        return;
+      }
+      pos = (h1 + h2 * intento) % (A->buckets);
+    }
+}
 
+bool contains(Hash A, string dom, string path){
+  int h1 = hash3(dom) % (A->buckets-1); // [0 .. cantBuckets - 1]
+  int h2 = 1+(hashSec(dom) % (A->buckets-2)); //[1 .. cantBuckets - 1] Sacado de wikipedia, enlace de las diapos
+  if (h1 < 0) h1 += (A->buckets -1);
+  if (h2 < 0) h2 += (A->buckets -2);
+  int intento = 0;
+  int  pos = (h1 + h2*intento)%(A->buckets); 
+  while (A->tabla[pos] != NULL)
+  {
+    intento++;
+    if (A->tabla[pos]->dom == dom)
+    {
+      NodoHash* actual = A->tabla[pos];
+      while(actual!= NULL){
+        if (actual->path == path) {
+           cout << "true" << endl;
+          return true;
+         
+        }
+        actual = actual->sig;
+      }
+      cout << "false" << endl;
+      return false;
+      
+    }
+    pos = (h1 + h2 * intento) % (A->buckets);
+  }
+  cout << "false" << endl;
+  return false;
+}
 
+void countDom(Hash A, string dom){
+  int h1 = hash3(dom) % (A->buckets-1); // [0 .. cantBuckets - 1]
+  int h2 = 1+(hashSec(dom) % (A->buckets-2)); //[1 .. cantBuckets - 1] Sacado de wikipedia, enlace de las diapos
+  if (h1 < 0) h1 += (A->buckets -1);
+  if (h2 < 0) h2 += (A->buckets -2);
+  int intento = 0;
+  int cantidad = 0;
+  int  pos = (h1 + h2*intento)%(A->buckets); 
+  while (A->tabla[pos] != NULL)
+  {
+    intento++;
+    if (A->tabla[pos]->dom == dom)
+    {
+      NodoHash* actual = A->tabla[pos];
+      while(actual!= NULL){
+        // ver que el path no sea vacio por la eliminacion en el remove, cuando era un solo nodo, es necesario?
+        if (actual->path != "")
+        {
+          cantidad++;
+        }
+        actual = actual->sig;
+      }
+      cout << "cantidad de recursos: " <<  cantidad << endl;
+      return;
 
-
+    }
+    pos = (h1 + h2 * intento) % (A->buckets);
+  }
+  return;
 }

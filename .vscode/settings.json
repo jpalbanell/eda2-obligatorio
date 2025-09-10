@@ -3,6 +3,7 @@
         "string": "cpp",
         "cassert": "cpp",
         "__node_handle": "cpp",
-        "new": "cpp"
+        "new": "cpp",
+        "iostream": "cpp"
     }
 }
