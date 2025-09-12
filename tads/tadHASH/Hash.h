@@ -5,6 +5,8 @@
 
 using namespace std; 
 
+struct NodoHashDomPath;
+
 struct NodoHashDom
 {
     string path;
@@ -66,94 +68,25 @@ int hashSec(string key) {
   return h;
 }
 
-void put(Hash& A, string dom, string path, string titulo, int tiempo){
-  int h1 = hash3(dom) % (A->buckets-1); // [0 .. cantBuckets - 1]
-  int h2 = 1+(hashSec(dom) % (A->buckets-2)); //[1 .. cantBuckets - 1] Sacado de wikipedia, enlace de las diapos
-  if (h1 < 0) h1 += (A->buckets -1);
-  if (h2 < 0) h2 += (A->buckets -2);
-  int intento = 0;
-  int  pos = (h1 + h2*intento)%(A->buckets); 
-  bool esta = false;
-  
-  while (A->tabla[pos] != NULL && !esta)
-  {
-  
-    intento++;
-    if (A->tabla[pos]->dom == dom ) {
-      esta = true;
-      NodoHash* actual = A->tabla[pos];
-      bool mod = false;
-      while(actual!= NULL && !mod){
-        if (actual->path == path)
-        {
-          actual->titulo = titulo;
-          actual->tiempo = tiempo;
-          mod = true;
-        }
-        actual = actual->sig;
-      }
-      if(!mod){
-        delete actual;
-        NodoHash* nuevo = new NodoHash;
-        nuevo->dom = dom;
-        nuevo->path = path;
-        nuevo->tiempo = tiempo;
-        nuevo->titulo = titulo;
-        nuevo->sig = A->tabla[pos];
-         A->tabla[pos] = nuevo;
-      }
-
-    }
-    pos = (h1 + h2*intento)%(A->buckets); 
-    if (pos<= -1)
-    {
-      pos = pos * (-1);
-    }
-  }
-  if (!esta){
-    
-    A->tabla[pos] = new NodoHash;
-    A->tabla[pos]->titulo = titulo;
-    A->tabla[pos]->tiempo = tiempo;
-    A->cantElem+=1;
-    A->tabla[pos]->path = path;
-    A->tabla[pos]->dom = dom;
-  }
 
 
-}
 void get(Hash A, string dom, string path){
-  int h1 = hash3(dom) % (A->buckets-1); // [0 .. cantBuckets - 1]
-  int h2 = 1+(hashSec(dom) % (A->buckets-2)); //[1 .. cantBuckets - 1] Sacado de wikipedia, enlace de las diapos
+  int h1 = hash3(dom+path) % (A->buckets-1); // [0 .. cantBuckets - 1]
+  int h2 = 1+(hashSec(dom+path) % (A->buckets-2)); //[1 .. cantBuckets - 1] Sacado de wikipedia, enlace de las diapos
   if (h1 < 0) h1 += (A->buckets -1);
   if (h2 < 0) h2 += (A->buckets -2);
   int intento = 0;
   int  pos = (h1 + h2*intento)%(A->buckets); 
   bool esta = false;
-  while (A->tabla[pos] != NULL && !esta)
+  while (A->tablaDomPath[pos] != NULL && !esta)
   {
-
     intento++;
-    if (A->tabla[pos]->dom == dom ) {
+    if (A->tablaDomPath[pos]->dom == dom && A->tablaDomPath[pos]->path == path)
+    {
+      cout << A->tablaDomPath[pos]->titulo << " " << A->tablaDomPath[pos]->tiempo << endl;
       esta = true;
-      NodoHash* actual = A->tabla[pos];
-      bool mod = false;
-      while(actual!= NULL && !mod){
-        if (actual->path == path)
-        {
-          cout << actual->titulo <<" "<<actual->tiempo <<endl;
-          mod = true;
-          break;
-          
-        }
-        actual = actual->sig;
-      }
-      if(!mod){
-        cout << "recurso_no_encontrado" <<endl;
-        break;
-      }
-
     }
+    
     pos = (h1 + h2*intento)%(A->buckets); 
     if (pos<= -1)
     {
@@ -163,14 +96,166 @@ void get(Hash A, string dom, string path){
   if (!esta){
     cout << "recurso_no_encontrado" <<endl;
   }
-
-
-
 }
 
-void remove(Hash A, string dom, string path){
+void remove(Hash& A, string dom, string path){
+  int h1 = hash3(dom+path) % (A->buckets-1); // [0 .. cantBuckets - 1]
+  int h2 = 1+(hashSec(dom+path) % (A->buckets-2)); //[1 .. cantBuckets - 1] Sacado de wikipedia, enlace de las diapos
+  if (h1 < 0) h1 += (A->buckets -1);
+  if (h2 < 0) h2 += (A->buckets -2);
+  int intento = 0;
+  int  pos = (h1 + h2*intento)%(A->buckets); 
+  bool esta = false;
+  while (A->tablaDomPath[pos] != NULL && !esta)
+  {
+    intento++;
+    if (A->tablaDomPath[pos]->dom == dom && A->tablaDomPath[pos]->path == path)
+    {
+      esta = true;
+      NodoHashDom* aBorrar = A->tablaDomPath[pos]->nodoD;
+      aBorrar->prev->sig = aBorrar->sig;
+      aBorrar->sig->prev = aBorrar->prev;
+      delete aBorrar;
+      delete A->tablaDomPath[pos];
+      A->tablaDomPath[pos] = NULL;
+      A->cantElem--;
+    }
+    pos = (h1 + h2*intento)%(A->buckets); 
+    if (pos<= -1)
+    {
+      pos = pos * (-1);
+    }
+  }
+}
 
+void clear_domain(Hash& A, string dom){
+  int h1 = hash3(dom) % (A->buckets-1); // [0 .. cantBuckets - 1]
+  int h2 = 1+(hashSec(dom) % (A->buckets-2)); //[1 .. cantBuckets - 1] Sacado de wikipedia, enlace de las diapos
+  if (h1 < 0) h1 += (A->buckets -1);
+  if (h2 < 0) h2 += (A->buckets -2);
+  int intento = 0;
+  int  pos = (h1 + h2*intento)%(A->buckets); 
+  bool esta = false;
+  while (A->tablaDom[pos] != NULL && !esta)
+  {
+    intento++;
+    if (A->tablaDom[pos]->dom == dom ) {
+      esta = true;
+      while(A->tablaDom[pos]->sig != NULL){
+        delete A->tablaDom[pos]->nodoDP;
+        NodoHashDom* aBorrar = A->tablaDom[pos];
+        A->tablaDom[pos]->prev = NULL;
+        A->tablaDom[pos] = A->tablaDom[pos] -> sig;
+        delete aBorrar;
+        A->cantElem--;
+      }
+      delete A->tablaDom[pos]->nodoDP;
+      delete A->tablaDom[pos];
+      A->tablaDom[pos] = NULL;
+      A->cantElem--;
+    }
+    pos = (h1 + h2*intento) % (A->buckets); 
+    if (pos <= -1)
+    {
+      pos = pos * (-1);
+    }
+  }
+}
 
+void clear(Hash& A){
+  int cant = A -> buckets;
+  delete A;
+  A = crear(cant);
+}
 
+void count_domain(Hash A, string dom){
+  int h1 = hash3(dom) % (A->buckets-1); // [0 .. cantBuckets - 1]
+  int h2 = 1+(hashSec(dom) % (A->buckets-2)); //[1 .. cantBuckets - 1] Sacado de wikipedia, enlace de las diapos
+  if (h1 < 0) h1 += (A->buckets -1);
+  if (h2 < 0) h2 += (A->buckets -2);
+  int intento = 0;
+  int  pos = (h1 + h2*intento)%(A->buckets); 
+  bool esta = false;
+  int cant = 0;
+  while (A->tablaDom[pos] != NULL && !esta)
+  {
+    intento++;
+    if (A->tablaDom[pos]->dom == dom ) {
+      esta = true;
+      NodoHashDom* aux = A->tablaDom[pos];
+      while(aux != NULL){
+        cant++;
+        aux = aux -> sig;
+      }
+      delete aux;
+    }
+    pos = (h1 + h2*intento) % (A->buckets); 
+    if (pos <= -1)
+    {
+      pos = pos * (-1);
+    }
+  }
+  cout << cant << endl;
+}
 
+void contains(Hash A, string dom, string path){
+  int h1 = hash3(dom+path) % (A->buckets-1); // [0 .. cantBuckets - 1]
+  int h2 = 1+(hashSec(dom+path) % (A->buckets-2)); //[1 .. cantBuckets - 1] Sacado de wikipedia, enlace de las diapos
+  if (h1 < 0) h1 += (A->buckets -1);
+  if (h2 < 0) h2 += (A->buckets -2);
+  int intento = 0;
+  int  pos = (h1 + h2*intento)%(A->buckets); 
+  bool esta = false;
+  int cant = 0;
+  while (A->tablaDomPath[pos] != NULL && !esta)
+  {
+    intento++;
+    if (A->tablaDomPath[pos]->dom == dom ) {
+      esta = true;
+    }
+    pos = (h1 + h2*intento) % (A->buckets); 
+    if (pos <= -1)
+    {
+      pos = pos * (-1);
+    }
+  }
+  if (esta)
+  {
+    cout << "true" << endl;
+  } else {
+    cout << "false" << endl;
+  }
+  
+}
+
+void list_domain(Hash A, string dom){
+  int h1 = hash3(dom) % (A->buckets-1); // [0 .. cantBuckets - 1]
+  int h2 = 1+(hashSec(dom) % (A->buckets-2)); //[1 .. cantBuckets - 1] Sacado de wikipedia, enlace de las diapos
+  if (h1 < 0) h1 += (A->buckets -1);
+  if (h2 < 0) h2 += (A->buckets -2);
+  int intento = 0;
+  int  pos = (h1 + h2*intento)%(A->buckets); 
+  bool esta = false;
+  while (A->tablaDom[pos] != NULL && !esta)
+  {
+    intento++;
+    if (A->tablaDom[pos]->dom == dom ) {
+      esta = true;
+      NodoHashDom* aux = A->tablaDom[pos];
+      while(aux != NULL){
+        cout << aux->path << endl;
+        aux = aux -> sig;
+      }
+      delete aux;
+    }
+    pos = (h1 + h2*intento) % (A->buckets); 
+    if (pos <= -1)
+    {
+      pos = pos * (-1);
+    }
+  }
+}
+
+void size(Hash A){
+  cout << A->cantElem << endl;
 }
