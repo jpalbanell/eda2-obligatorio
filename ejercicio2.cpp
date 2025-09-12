@@ -11,7 +11,7 @@ int main()
     // TODO
     int N;
     cin >> N;
-    Hash nuevo = crear(N*2);
+    Hash nuevo = crear(N);
     put(nuevo, "a", "b", "titu", 12);
     put(nuevo, "a", "c", "titu2", 14);
     put(nuevo, "a", "d", "titu2", 14);
