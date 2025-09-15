@@ -9,20 +9,75 @@ using namespace std;
 int main()
 {
     // TODO
-    int N;
-    cin >> N;
-    Hash nuevo = crear(N);
-    put(nuevo,nuevo, "google.com", "path1", "titulo2", 25);
-    put(nuevo,nuevo, "google.com", "path12", "titulo2", 25323);
-    put(nuevo,nuevo, "fb.com", "pathsad1", "titulo2", 25);
-    put(nuevo,nuevo, "ig.com", "path1", "titulo45", 25323);
-    put(nuevo,nuevo, "mail.com", "path143223", "titulo24232", 2543224);
-
-    contains(nuevo, "a", "c");
-    remove(nuevo, "a", "b");
-    contains(nuevo, "a", "b");
-    get(nuevo, "a", "b");
-    // get(nuevo, "a", "g");
-    // get(nuevo, "b", "f");
+    int n;
+    cin >> n;
+    Hash a = crear(n);
+    for (int i = 0; i < n; i++)
+    {
+        string comando;
+        cin >> comando;
+        if (comando == "PUT")
+        {
+            // string dom;
+            // string path;
+            // string tit;
+            // int tiempo;
+            // cin >> dom;
+            // cin >> path;
+            // cin >> tit;
+            // cin >> tiempo;
+            // put(a, a, dom, path, tit, tiempo);
+        }
+        else if (comando == "GET")
+        {
+            string dom;
+            string path;
+            cin >> dom;
+            cin >> path;
+            get(a, dom, path);
+        }
+        else if (comando == "REMOVE")
+        {
+            string dom;
+            string path;
+            cin >> dom;
+            cin >> path;
+            remove(a, dom, path);
+        }
+        else if (comando == "CONTAINS")
+        {
+            string dom;
+            string path;
+            cin >> dom;
+            cin >> path;
+            contains(a, dom, path);
+        }
+        else if (comando == "COUNT_DOMAIN")
+        {
+            string dom;
+            cin >> dom;
+            count_domain(a, dom);
+        }
+        else if (comando == "LIST_DOMAIN")
+        {
+            string dom;
+            cin >> dom;
+            list_domain(a, dom);
+        }
+        else if (comando == "CLEAR_DOMAIN")
+        {
+            string dom;
+            cin >> dom;
+            clear_domain(a, dom);
+        }
+        else if (comando == "SIZE")
+        {
+            size(a);
+        }
+        else if (comando == "CLEAR")
+        {
+            clear(a);
+        }
+    }   
     return 0;
 }
