@@ -12,6 +12,12 @@ int main()
     int N;
     cin >> N;
     Hash nuevo = crear(N);
+    put(nuevo,nuevo, "google.com", "path1", "titulo2", 25);
+    put(nuevo,nuevo, "google.com", "path12", "titulo2", 25323);
+    put(nuevo,nuevo, "fb.com", "pathsad1", "titulo2", 25);
+    put(nuevo,nuevo, "ig.com", "path1", "titulo45", 25323);
+    put(nuevo,nuevo, "mail.com", "path143223", "titulo24232", 2543224);
+
     contains(nuevo, "a", "c");
     remove(nuevo, "a", "b");
     contains(nuevo, "a", "b");
