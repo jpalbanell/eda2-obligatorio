@@ -18,15 +18,15 @@ int main()
         cin >> comando;
         if (comando == "PUT")
         {
-            // string dom;
-            // string path;
-            // string tit;
-            // int tiempo;
-            // cin >> dom;
-            // cin >> path;
-            // cin >> tit;
-            // cin >> tiempo;
-            // put(a, a, dom, path, tit, tiempo);
+            string dom;
+            string path;
+            string tit;
+            int tiempo;
+            cin >> dom;
+            cin >> path;
+            cin >> tit;
+            cin >> tiempo;
+            put(a, dom, path, tit, tiempo);
         }
         else if (comando == "GET")
         {
@@ -50,13 +50,13 @@ int main()
             string path;
             cin >> dom;
             cin >> path;
-            contains(a, dom, path);
+            cout << contains(a, dom, path) << endl;
         }
         else if (comando == "COUNT_DOMAIN")
         {
             string dom;
             cin >> dom;
-            count_domain(a, dom);
+            cout << count_domain(a, dom) << endl;
         }
         else if (comando == "LIST_DOMAIN")
         {
@@ -72,7 +72,7 @@ int main()
         }
         else if (comando == "SIZE")
         {
-            size(a);
+            cout << size(a) << endl;
         }
         else if (comando == "CLEAR")
         {
