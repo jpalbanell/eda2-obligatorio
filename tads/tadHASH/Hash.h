@@ -14,8 +14,6 @@ struct NodoHashDom
     string titulo;
     int tiempo;
     NodoHashDom* sig;
-    NodoHashDom* prev;
-    NodoHashDomPath* nodoDP;
 };
 
 struct NodoHashDomPath
@@ -24,7 +22,6 @@ struct NodoHashDomPath
     string dom;
     string titulo;
     int tiempo;
-    NodoHashDom* nodoD;
 };
 
 struct RepresentacionHash
@@ -67,7 +64,7 @@ int hashSec(string key) {
     h = (37 * h + int(key[i]))* (i*i);
   return h;
 }
-
+/*
 void putDomPath(Hash B, string dom, string path, string titulo, int tiempo,NodoHashDom* pHashDom){
   string clave = dom + "-" +path;
   int h1 = hash3(dom) % (B->buckets-1); // [0 .. cantBuckets - 1]
@@ -235,7 +232,7 @@ void put(Hash& A, Hash B, string dom, string path, string titulo, int tiempo){
     return;
   }
 }
-
+*/
 void get(Hash A, string dom, string path){
   int h1 = hash3(dom+path) % (A->buckets-1); // [0 .. cantBuckets - 1]
   int h2 = 1+(hashSec(dom+path) % (A->buckets-2)); //[1 .. cantBuckets - 1] Sacado de wikipedia, enlace de las diapos
