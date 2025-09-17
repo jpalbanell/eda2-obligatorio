@@ -50,7 +50,13 @@ int main()
             string path;
             cin >> dom;
             cin >> path;
-            cout << contains(a, dom, path) << endl;
+            if (contains(a, dom, path))
+            {
+                cout << "true" << endl;
+            } else {
+                cout << "false" << endl;
+            }
+            
         }
         else if (comando == "COUNT_DOMAIN")
         {

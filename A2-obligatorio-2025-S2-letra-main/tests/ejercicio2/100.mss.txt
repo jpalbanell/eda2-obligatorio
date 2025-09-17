@@ -1,0 +1,56 @@
+ 
+true
+true
+true
+AboutPage 972405853
+/api
+/api
+recurso_no_encontrado
+AdminPage 143655838
+SettingsPage 322972791
+/api
+0
+false
+true
+true
+APIPage 892864901
+/api
+false
+DownloadPage 520641962
+/
+/api
+false
+true
+/news
+0
+false
+DownloadPage 308140970
+Dashboard 956395392
+true
+recurso_no_encontrado
+recurso_no_encontrado
+0
+0
+AboutPage 646867589
+false
+recurso_no_encontrado
+APIPage 240283320
+false
+true
+recurso_no_encontrado
+NewsPage 268694426
+true
+recurso_no_encontrado
+APIPage 240283320
+Support 419556175
+APIPage 368409075
+/download
+recurso_no_encontrado
+recurso_no_encontrado
+/home
+0
+recurso_no_encontrado
+true
+0
+recurso_no_encontrado
+/videos
