@@ -62,7 +62,8 @@ int main()
         {
             string dom;
             cin >> dom;
-            cout << count_domain(a, dom) << endl;
+            int cant =  count_domain(a, dom);
+            cout << cant << endl;
         }
         else if (comando == "LIST_DOMAIN")
         {

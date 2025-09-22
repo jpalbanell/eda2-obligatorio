@@ -51,8 +51,8 @@ Hash crear(int esperados){
       nuevo -> tablaDom[i] = NULL;
       nuevo -> tablaDomPath[i] = NULL;
       nuevo -> cantDom[i] = 0;
-      nuevo ->tablaDomPathSeBorro [i] = false;
-      nuevo ->tablaDomSeBorro [i] = false;
+      nuevo -> tablaDomPathSeBorro [i] = false;
+      nuevo -> tablaDomSeBorro [i] = false;
     }
     
     return nuevo;
@@ -135,11 +135,15 @@ void put(Hash& A, string dom, string path, string titulo, int tiempo){
         if (actual->path == path)
         {
           pathE = true;
-          previo = actual->sig; 
+          previo->sig = actual->sig; 
           delete actual;
         }
         previo= actual;
         actual = actual->sig;
+      }
+      if (!pathE)
+      {
+        A->cantDom[pos] += 1;
       }
       putDomPath(A, dom, path, titulo, tiempo);
       //break;
@@ -160,6 +164,7 @@ void put(Hash& A, string dom, string path, string titulo, int tiempo){
     nuevo->sig = NULL;
     A->tablaDom[pos] = nuevo;
     A->tablaDomSeBorro[pos] = false; 
+    A->cantDom[pos] += 1;
     putDomPath(A, dom, path, titulo, tiempo);
     A->cantElem++;
   }
@@ -209,7 +214,6 @@ void remove(Hash& A, string dom, string path){
       esta = true;
       delete A->tablaDomPath[pos];
       A->tablaDomPath[pos] = NULL;
-      A->cantDom[pos] = A->cantDom[pos] - 1;
       A->tablaDomPathSeBorro[pos] = true;
     }
     pos = (h1 + h2*intento)%(A->buckets); 
@@ -244,6 +248,7 @@ void remove(Hash& A, string dom, string path){
           NodoHashDom* aBorrar = aux;
           aux = aux -> sig;
           delete aBorrar;
+          A->cantDom[pos] = A->cantDom[pos] - 1;
         }
         A->tablaDomSeBorro[pos] = true;
       }
@@ -288,7 +293,7 @@ void clear_domain(Hash& A, string dom){
             A->tablaDomPath[pos2] = NULL;
             A->cantDom[pos] = A->cantDom[pos] - 1;
           }
-          pos2 = (h1 + h2*intento2)%(A->buckets); 
+          pos2 = (h11 + h22*intento2)%(A->buckets); 
           if (pos2<= -1)
           {
             pos2 = pos2 * (-1);
@@ -387,7 +392,6 @@ void list_domain(Hash A, string dom){
         cout << aux->path << endl;
         aux = aux -> sig;
       }
-      delete aux;
     }
     pos = (h1 + h2*intento) % (A->buckets); 
     if (pos <= -1)

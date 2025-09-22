@@ -9,7 +9,7 @@ recurso_no_encontrado
 AdminPage 143655838
 SettingsPage 322972791
 /api
-0
+1
 false
 true
 true
@@ -22,14 +22,14 @@ DownloadPage 520641962
 false
 true
 /news
-0
+1
 false
 DownloadPage 308140970
 Dashboard 956395392
 true
 recurso_no_encontrado
 recurso_no_encontrado
-0
+1
 0
 AboutPage 646867589
 false
@@ -48,7 +48,7 @@ APIPage 368409075
 recurso_no_encontrado
 recurso_no_encontrado
 /home
-0
+2
 recurso_no_encontrado
 true
 0
