@@ -1,14 +1,13 @@
-#include <string>
-#include <cassert>
-#include <iostream>
-#include <limits>
 
-using namespace std; 
+#include <cassert>
+#include <limits>
+#include <string>
+#include <iostream>
+using namespace std;
 
 struct NodoHashDomPath;
 
-struct NodoHashDom
-{
+struct NodoHashDom {
     string path;
     string dom;
     string titulo;
@@ -16,50 +15,27 @@ struct NodoHashDom
     NodoHashDom* sig;
 };
 
-struct NodoHashDomPath
-{
+struct NodoHashDomPath {
     string path;
     string dom;
     string titulo;
     int tiempo;
 };
 
-struct RepresentacionHash
-{
+struct RepresentacionHash {
     NodoHashDom** tablaDom;
-    NodoHashDomPath** tablaDomPath;
-    int* cantDom; // pos es con dom+path
-    bool* tablaDomSeBorro;
-    bool* tablaDomPathSeBorro;
-    int cantElem;
-    int buckets;
-};
-typedef RepresentacionHash *Hash; 
-
-Hash crear(int esperados){
-    esperados = esperados * 2;
-    Hash nuevo = new RepresentacionHash;
-    nuevo -> cantElem = 0;
-    nuevo -> buckets = esperados;
-    nuevo -> tablaDom = new NodoHashDom*[esperados];
-    nuevo -> tablaDomPath = new NodoHashDomPath*[esperados];
-    nuevo -> tablaDomPathSeBorro = new bool[esperados];
-    nuevo -> tablaDomSeBorro = new bool[esperados];
-    nuevo -> cantDom = new int[esperados];
-    for (int i = 0; i < esperados; i++)
-    {
-      nuevo -> tablaDom[i] = NULL;
-      nuevo -> tablaDomPath[i] = NULL;
-      nuevo -> cantDom[i] = 0;
-      nuevo -> tablaDomPathSeBorro [i] = false;
-      nuevo -> tablaDomSeBorro [i] = false;
-    }
+    bool* tablaDomSeBorro; 
+    int*  cantDom;
     
-    return nuevo;
-}
+    NodoHashDomPath** tablaDomPath;
+    bool* tablaDomPathSeBorro; 
 
-// Ref: https://cseweb.ucsd.edu/~kube/cls/100/Lectures/lec16/lec16-15.html
-// diapositivas de la clase
+    int cantElem;  
+    int buckets;   
+};
+typedef RepresentacionHash* Hash;
+
+// ---------- hashing  ----------
 int hash3(string key) {
   int h = 0;
   for (int i = 0; i < key.length(); i++)
@@ -74,338 +50,307 @@ int hashSec(string key) {
     h = (37 * h + int(key[i]))* (i*i);
   return h;
 }
+int mod(int a, int m) { int r = a % m; return r < 0 ? r + m : r; }
 
-void putDomPath(Hash B, string dom, string path, string titulo, int tiempo){
-  int h1 = hash3(dom+path) % (B->buckets-1); // [0 .. cantBuckets - 1]
-  int h2 = 1+(hashSec(dom+path) % (B->buckets-2)); //[1 .. cantBuckets - 1] Sacado de wikipedia, enlace de las diapos
-  if (h1 < 0) h1 += (B->buckets -1);
-  if (h2 < 0) h2 += (B->buckets -2);
-  int intento = 0;
-  int  pos = (h1 + h2*intento)%(B->buckets); 
-  while (B->tablaDomPathSeBorro[pos] || (B->tablaDomPath[pos] != NULL && !(B->tablaDomPath[pos]->dom ==dom && B->tablaDomPath[pos]->path ==path)) )
-  {
-    intento++;
-    pos = (h1 + h2*intento)%(B->buckets); 
-    if (pos<= -1)
-    {
-      pos = pos * (-1);
+Hash crear(int n) {
+    int B = n * 2;
+    if (B < 3) B = 3;       
+    if ((B & 1) == 0) B++; 
+
+    Hash A = new RepresentacionHash;
+    A->buckets = B;
+    A->cantElem = 0;
+
+    A->tablaDom = new NodoHashDom*[B];
+    A->tablaDomSeBorro = new bool[B];
+    A->cantDom = new int[B];
+
+    A->tablaDomPath = new NodoHashDomPath*[B];
+    A->tablaDomPathSeBorro = new bool[B];
+
+    for (int i = 0; i < B; ++i) {
+        A->tablaDom[i] = NULL;
+        A->tablaDomSeBorro[i] = false;
+        A->cantDom[i] = 0;
+
+        A->tablaDomPath[i] = NULL;
+        A->tablaDomPathSeBorro[i] = false;
     }
-  }
-  if (B->tablaDomPath[pos] == NULL)
-  {
-    NodoHashDomPath* nuevo = new NodoHashDomPath;
-    nuevo->dom = dom;
-    nuevo->path = path;
-    nuevo->tiempo = tiempo;
-    nuevo->titulo = titulo;
-    B->tablaDomPath[pos] = nuevo; 
-    B->tablaDomPathSeBorro[pos] = false; 
-    return;
-  }
-  B->tablaDomPath[pos]->tiempo = tiempo;
-  B->tablaDomPath[pos]->titulo = titulo; 
+    return A;
 }
 
-void put(Hash& A, string dom, string path, string titulo, int tiempo){
-  int h1 = hash3(dom) % (A->buckets-1); // [0 .. cantBuckets - 1]
-  int h2 = 1+(hashSec(dom) % (A->buckets-2)); //[1 .. cantBuckets - 1] Sacado de wikipedia, enlace de las diapos
-  if (h1 < 0) h1 += (A->buckets -1);
-  if (h2 < 0) h2 += (A->buckets -2);
-  int intento = 0;
-  int  pos = (h1 + h2*intento)%(A->buckets); 
-  bool esta = false;
-  while (A->tablaDomSeBorro[pos] || (A->tablaDom[pos] != NULL && !esta))
-  {
-    intento++;
-    if (A->tablaDom[pos] != NULL && A->tablaDom[pos]->dom == dom ) {
-      esta = true;
-      //agregas path al principio de la lista
-      NodoHashDom* nuevo = new NodoHashDom;
-      nuevo->dom = dom;
-      nuevo->path = path;
-      nuevo->titulo = titulo;
-      nuevo->tiempo = tiempo;
-      nuevo->sig = A->tablaDom[pos];
-      A->tablaDom[pos] = nuevo;
-      // ver si path ya existia
-      NodoHashDom* actual = A->tablaDom[pos]->sig;
-      NodoHashDom* previo = A->tablaDom[pos];
-      bool pathE = false;
-      while(actual!= NULL && !pathE){
-        if (actual->path == path)
-        {
-          pathE = true;
-          previo->sig = actual->sig; 
-          delete actual;
+// Busca (dom,path)
+// Recorre mientras HAY algo o HAY true en seBorro
+static int buscarDomPath(Hash A, const string& dom, const string& path) {
+    string key = dom + path;
+    int b = A->buckets;
+    int h1 = mod(hash3(key), b);
+    int h2 = 1 + mod(hashSec(key), b - 1);
+
+    int intento = 0;
+    int pos = (h1 + h2 * intento) % b;
+
+    while (A->tablaDomPath[pos] != NULL || A->tablaDomPathSeBorro[pos]) {
+        if (A->tablaDomPath[pos] != NULL &&
+            A->tablaDomPath[pos]->dom == dom &&
+            A->tablaDomPath[pos]->path == path) {
+            return pos;
         }
-        previo= actual;
-        actual = actual->sig;
-      }
-      if (!pathE)
-      {
-        A->cantDom[pos] += 1;
-      }
-      putDomPath(A, dom, path, titulo, tiempo);
-      //break;
+        intento++;
+        pos = (h1 + h2 * intento) % b;
     }
-    pos = (h1 + h2*intento)%(A->buckets); 
-    if (pos<= -1)
-    {
-      pos = pos * (-1);
+    return -1; // no está
+}
+
+// Devuelve posición libre para insertar
+static int posicionInsercionDomPath(Hash A, const string& dom, const string& path) {
+    string key = dom + path;
+    int b = A->buckets;
+    int h1 = mod(hash3(key), b);
+    int h2 = 1 + mod(hashSec(key), b - 1);
+
+    int intento = 0;
+    int pos = (h1 + h2 * intento) % b;
+    while (A->tablaDomPath[pos] != NULL || A->tablaDomPathSeBorro[pos]) {
+        if (A->tablaDomPathSeBorro[pos] && A->tablaDomPath[pos] == NULL) {
+            return pos; 
+        }
+        intento++;
+        pos = (h1 + h2 * intento) % b;
     }
-  }
-  
-  if (!esta){
+    return pos;
+}
+
+static void putDomPath(Hash A, const string& dom, const string& path, const string& titulo, int tiempo) {
+    int pos = buscarDomPath(A, dom, path);
+    if (pos != -1) {
+        // actualizar
+        A->tablaDomPath[pos]->titulo = titulo;
+        A->tablaDomPath[pos]->tiempo = tiempo;
+        return;
+    }
+    // insertar
+    pos = posicionInsercionDomPath(A, dom, path);
+    if (pos >= 0) {
+        A->tablaDomPath[pos] = new NodoHashDomPath;
+        A->tablaDomPath[pos]-> path = path;
+        A->tablaDomPath[pos]-> dom = dom;
+        A->tablaDomPath[pos]-> titulo = titulo;
+        A->tablaDomPath[pos]-> tiempo = tiempo;
+        
+        A->tablaDomPathSeBorro[pos] = false;
+    }
+}
+
+static bool removeDomPath(Hash A, const string& dom, const string& path) {
+    int pos = buscarDomPath(A, dom, path);
+    if (pos == -1) return false;
+    delete A->tablaDomPath[pos];
+    A->tablaDomPath[pos] = NULL;
+    A->tablaDomPathSeBorro[pos] = true;
+    return true;
+}
+
+void put(Hash& A, string dom, string path, string titulo, int tiempo) {
+    int b = A->buckets;
+    int h1 = mod(hash3(dom), b);
+    int h2 = 1 + mod(hashSec(dom), b - 1);
+
+    int intento = 0;
+    int pos = (h1 + h2 * intento) % b;
+    int posDom = -1;
+
+    // buscar dominio o primer hueco
+    while (A->tablaDom[pos] != NULL || A->tablaDomSeBorro[pos]) {
+        if (A->tablaDom[pos] != NULL && A->tablaDom[pos]->dom == dom) {
+            posDom = pos; break;
+        }
+        intento++;
+        pos = (h1 + h2 * intento) % b;
+    }
+    if (posDom == -1) {
+        // dominio no estaba, insertar bucket del dominio 
+        posDom = pos;
+        A->tablaDom[posDom] = new NodoHashDom;
+        A->tablaDom[posDom]-> path = path;
+        A->tablaDom[posDom]-> dom = dom;
+        A->tablaDom[posDom]-> titulo = titulo;
+        A->tablaDom[posDom]-> tiempo = tiempo;
+        A->tablaDom[posDom]-> sig = NULL;
+
+        A->tablaDomSeBorro[posDom] = false;
+        A->cantDom[posDom] = 1;
+        A->cantElem += 1;
+        putDomPath(A, dom, path, titulo, tiempo);
+        return;
+    }
+
     NodoHashDom* nuevo = new NodoHashDom;
-    nuevo->dom = dom;
-    nuevo->path = path;
-    nuevo->titulo = titulo;
-    nuevo->tiempo = tiempo;
-    nuevo->sig = NULL;
-    A->tablaDom[pos] = nuevo;
-    A->tablaDomSeBorro[pos] = false; 
-    A->cantDom[pos] += 1;
+    nuevo-> path = path;
+    nuevo-> dom = dom;
+    nuevo-> titulo = titulo;
+    nuevo-> tiempo = tiempo;
+    nuevo-> sig = A->tablaDom[posDom];
+
+    A->tablaDom[posDom] = nuevo;
+
+    // si ya existía ese path quita el viejo de la lista
+    bool existia = false;
+    NodoHashDom* prev = nuevo;
+    NodoHashDom* cur  = nuevo->sig;
+    while (cur != NULL) {
+        if (cur->path == path) {
+            prev->sig = cur->sig;
+            delete cur;
+            existia = true;
+            break;
+        }
+        prev = cur; cur = cur->sig;
+    }
+
     putDomPath(A, dom, path, titulo, tiempo);
-    A->cantElem++;
-  }
+    if (!existia) { A->cantDom[posDom] += 1; A->cantElem += 1; }
 }
 
-void get(Hash A, string dom, string path){
-  int h1 = hash3(dom+path) % (A->buckets-1); // [0 .. cantBuckets - 1]
-  int h2 = 1+(hashSec(dom+path) % (A->buckets-2)); //[1 .. cantBuckets - 1] Sacado de wikipedia, enlace de las diapos
-  if (h1 < 0) h1 += (A->buckets -1);
-  if (h2 < 0) h2 += (A->buckets -2);
-  int intento = 0;
-  int  pos = (h1 + h2*intento)%(A->buckets); 
-  bool esta = false;
-  while (A->tablaDomPath[pos] != NULL && !esta)
-  {
-    intento++;
-    if (A->tablaDomPath[pos]->dom == dom && A->tablaDomPath[pos]->path == path)
-    {
-      cout << A->tablaDomPath[pos]->titulo << " " << A->tablaDomPath[pos]->tiempo << endl;
-      esta = true;
+void get(Hash A, string dom, string path) {
+    int pos = buscarDomPath(A, dom, path);
+    if (pos != -1 && A->tablaDomPath[pos] != NULL) {
+        cout << A->tablaDomPath[pos]->titulo << " " << A->tablaDomPath[pos]->tiempo << "\n";
+    } else {
+        cout << "recurso_no_encontrado\n";
     }
-    
-    pos = (h1 + h2*intento)%(A->buckets); 
-    if (pos<= -1)
-    {
-      pos = pos * (-1);
-    }
-  }
-  if (!esta){
-    cout << "recurso_no_encontrado" <<endl;
-  }
 }
 
-void remove(Hash& A, string dom, string path){
-  int h1 = hash3(dom+path) % (A->buckets-1); // [0 .. cantBuckets - 1]
-  int h2 = 1+(hashSec(dom+path) % (A->buckets-2)); //[1 .. cantBuckets - 1] Sacado de wikipedia, enlace de las diapos
-  if (h1 < 0) h1 += (A->buckets -1);
-  if (h2 < 0) h2 += (A->buckets -2);
-  int intento = 0;
-  int  pos = (h1 + h2*intento)%(A->buckets); 
-  bool esta = false;
-  while (A->tablaDomPathSeBorro[pos] || (A->tablaDomPath[pos] != NULL && !esta))
-  {
-    intento++;
-    if (A->tablaDomPath[pos] != NULL && A->tablaDomPath[pos]->dom == dom && A->tablaDomPath[pos]->path == path)
-    {
-      esta = true;
-      delete A->tablaDomPath[pos];
-      A->tablaDomPath[pos] = NULL;
-      A->tablaDomPathSeBorro[pos] = true;
+void remove(Hash& A, string dom, string path) {
+    bool estaba = removeDomPath(A, dom, path);
+    if (!estaba) return;
+    A->cantElem -= 1;
+
+    int b = A->buckets;
+    int h1 = mod(hash3(dom), b);
+    int h2 = 1 + mod(hashSec(dom), b - 1);
+
+    int intento = 0;
+    int pos = (h1 + h2 * intento) % b;
+    int posDom = -1;
+
+    while (A->tablaDom[pos] != NULL || A->tablaDomSeBorro[pos]) {
+        if (A->tablaDom[pos] != NULL && A->tablaDom[pos]->dom == dom) { posDom = pos; break; }
+        intento++;
+        pos = (h1 + h2 * intento) % b;
     }
-    pos = (h1 + h2*intento)%(A->buckets); 
-    if (pos<= -1)
-    {
-      pos = pos * (-1);
+    if (posDom == -1) return; // ya no está el dominio
+
+    // quitar el nodo del path en la lista del dominio
+    NodoHashDom* cur = A->tablaDom[posDom];
+    NodoHashDom* prev = NULL;
+    while (cur != NULL && cur->path != path) { 
+      prev = cur; 
+      cur = cur->sig; }
+    if (cur == NULL) return;
+
+    if (prev != NULL) {
+      prev->sig = cur->sig;
     }
-  }
-  if (esta)
-  {
-    A->cantElem--;
-    h1 = hash3(dom) % (A->buckets-1); // [0 .. cantBuckets - 1]
-    h2 = 1+(hashSec(dom) % (A->buckets-2)); //[1 .. cantBuckets - 1] Sacado de wikipedia, enlace de las diapos
-    if (h1 < 0) h1 += (A->buckets -1);
-    if (h2 < 0) h2 += (A->buckets -2);
-    intento = 0;
-    pos = (h1 + h2*intento)%(A->buckets); 
-    esta = false;
-    while (A->tablaDomSeBorro[pos] || (A->tablaDom != NULL && !esta))
+    else 
     {
-      intento++;
-      if (A->tablaDom[pos] != NULL && A->tablaDom[pos]->dom == dom)
-      {
-        esta = true;
-        NodoHashDom* aux = A -> tablaDom[pos];
-        while (aux->path != path && aux != NULL)
-        {
-          aux = aux -> sig;
+      A->tablaDom[posDom] = cur->sig;
+    }
+    delete cur;
+
+    A->cantDom[posDom] -= 1;
+    if (A->tablaDom[posDom] == NULL) {
+        A->tablaDomSeBorro[posDom] = true;
+    }
+}
+
+int count_domain(Hash A, string dom) {
+    int b = A->buckets;
+    int h1 = mod(hash3(dom), b);
+    int h2 = 1 + mod(hashSec(dom), b - 1);
+
+    int intento = 0;
+    int pos = (h1 + h2 * intento) % b;
+
+    while (A->tablaDom[pos] != NULL || A->tablaDomSeBorro[pos]) {
+        if (A->tablaDom[pos] != NULL && A->tablaDom[pos]->dom == dom) {
+            return A->cantDom[pos];
         }
-        if (aux != NULL)
-        {
-          NodoHashDom* aBorrar = aux;
-          aux = aux -> sig;
-          delete aBorrar;
-          A->cantDom[pos] = A->cantDom[pos] - 1;
+        intento++;
+        pos = (h1 + h2 * intento) % b;
+    }
+    return 0;
+}
+
+bool contains(Hash A, string dom, string path) {
+    int pos = buscarDomPath(A, dom, path);
+    return (pos != -1 && A->tablaDomPath[pos] != NULL);
+}
+
+void list_domain(Hash A, string dom) {
+    int b = A->buckets;
+    int h1 = mod(hash3(dom), b);
+    int h2 = 1 + mod(hashSec(dom), b - 1);
+
+    int intento = 0;
+    int pos = (h1 + h2 * intento) % b;
+    NodoHashDom* head = NULL;
+
+    while (A->tablaDom[pos] != NULL || A->tablaDomSeBorro[pos]) {
+        if (A->tablaDom[pos] != NULL && A->tablaDom[pos]->dom == dom) {
+            head = A->tablaDom[pos];
+            break;
         }
-        A->tablaDomSeBorro[pos] = true;
-      }
-      pos = (h1 + h2*intento)%(A->buckets); 
-      if (pos<= -1)
-      {
-        pos = pos * (-1);
-      }
+        intento++;
+        pos = (h1 + h2 * intento) % b;
     }
-  }
-  
+
+    bool first = true;
+    for (NodoHashDom* p = head; p != NULL; p = p->sig) {
+        if (!first) cout << ' ';
+        cout << p->path;
+        first = false;
+    }
+    cout << "\n";
 }
 
-void clear_domain(Hash& A, string dom){
-  int h1 = hash3(dom) % (A->buckets-1); // [0 .. cantBuckets - 1]
-  int h2 = 1+(hashSec(dom) % (A->buckets-2)); //[1 .. cantBuckets - 1] Sacado de wikipedia, enlace de las diapos
-  if (h1 < 0) h1 += (A->buckets -1);
-  if (h2 < 0) h2 += (A->buckets -2);
-  int intento = 0;
-  int  pos = (h1 + h2*intento)%(A->buckets); 
-  bool esta = false;
-  while (A->tablaDomSeBorro[pos] || (A->tablaDom[pos] != NULL && !esta))
-  {
-    intento++;
-    if (A->tablaDom[pos] != NULL && A->tablaDom[pos]->dom == dom ) {
-      esta = true;
-      while(A->tablaDom[pos] != NULL){
-        int h11 = hash3(dom+(A->tablaDom[pos]->path)) % (A->buckets-1); // [0 .. cantBuckets - 1]
-        int h22 = 1+(hashSec(dom+(A->tablaDom[pos]->path)) % (A->buckets-2)); //[1 .. cantBuckets - 1] Sacado de wikipedia, enlace de las diapos
-        if (h11 < 0) h1 += (A->buckets -1);
-        if (h22 < 0) h2 += (A->buckets -2);
-        int intento2 = 0;
-        int  pos2 = (h1 + h2*intento2)%(A->buckets); 
-        bool esta2 = false;
-        while (A->tablaDomPathSeBorro[pos2] || (A->tablaDomPath[pos2] != NULL && !esta2))
-        {
-          intento2++;
-          if (A->tablaDomPath[pos2] != NULL && A->tablaDomPath[pos2]->dom == dom && A->tablaDomPath[pos2]->path == (A->tablaDom[pos]->path))
-          {
-            esta2 = true;
-            delete A->tablaDomPath[pos2];
-            A->tablaDomPath[pos2] = NULL;
-            A->cantDom[pos] = A->cantDom[pos] - 1;
-          }
-          pos2 = (h11 + h22*intento2)%(A->buckets); 
-          if (pos2<= -1)
-          {
-            pos2 = pos2 * (-1);
-          }
+void clear_domain(Hash& A, string dom) {
+    int b = A->buckets;
+    int h1 = mod(hash3(dom), b);
+    int h2 = 1 + mod(hashSec(dom), b - 1);
+
+    int intento = 0;
+    int pos = (h1 + h2 * intento) % b;
+    int posDom = -1;
+
+    while (A->tablaDom[pos] != NULL || A->tablaDomSeBorro[pos]) {
+        if (A->tablaDom[pos] != NULL && A->tablaDom[pos]->dom == dom) { posDom = pos; break; }
+        intento++;
+        pos = (h1 + h2 * intento) % b;
+    }
+    if (posDom == -1 || A->tablaDom[posDom] == NULL) return;
+
+    // borra toda la lista y entradas (dom+path)
+    NodoHashDom* p = A->tablaDom[posDom];
+    while (p != NULL) {
+        removeDomPath(A, dom, p->path);
+        A->cantElem -= 1;
+        NodoHashDom* nxt = p->sig;
+        delete p;
+        p = nxt;
+    }
+    A->tablaDom[posDom] = NULL;
+    A->cantDom[posDom] = 0;
+    A->tablaDomSeBorro[posDom] = true;
+}
+
+void clear(Hash& A) {
+    for (int i = 0; i < A->buckets; ++i) {
+        if (A->tablaDom[i] != NULL) {
+            string dom = A->tablaDom[i]->dom;
+            clear_domain(A, dom);
         }
-        A->tablaDomPathSeBorro[pos2] = true;
-        NodoHashDom* aBorrar = A->tablaDom[pos];
-        A->tablaDom[pos] = A->tablaDom[pos] -> sig;
-        delete aBorrar;
-        A->cantElem--;
-      }
-      A->tablaDomSeBorro[pos] = true;
     }
-    pos = (h1 + h2*intento) % (A->buckets); 
-    if (pos <= -1)
-    {
-      pos = pos * (-1);
-    }
-  }
 }
 
-void clear(Hash& A){
-  for (int i = 0; i < A->buckets; i++)
-  {
-    if (A->tablaDom[i] != NULL)
-    {
-      string domBorrar = A->tablaDom[i]->dom;
-      clear_domain(A, domBorrar);
-    }
-  }
-  
-}
-
-int count_domain(Hash A, string dom){
-  int h1 = hash3(dom) % (A->buckets-1); // [0 .. cantBuckets - 1]
-  int h2 = 1+(hashSec(dom) % (A->buckets-2)); //[1 .. cantBuckets - 1] Sacado de wikipedia, enlace de las diapos
-  if (h1 < 0) h1 += (A->buckets -1);
-  if (h2 < 0) h2 += (A->buckets -2);
-  int intento = 0;
-  int  pos = (h1 + h2*intento)%(A->buckets); 
-  bool esta = false;
-  while (A->tablaDomSeBorro[pos] || (A->tablaDom[pos] != NULL && !esta))
-  {
-    intento++;
-    if (A->tablaDom[pos] != NULL && A->tablaDom[pos]->dom == dom ) {
-      return A->cantDom[pos];
-    }
-    pos = (h1 + h2*intento) % (A->buckets); 
-    if (pos <= -1)
-    {
-      pos = pos * (-1);
-    }
-  }
-  return 0;
-}
-
-bool contains(Hash A, string dom, string path){
-  int h1 = hash3(dom+path) % (A->buckets-1); // [0 .. cantBuckets - 1]
-  int h2 = 1+(hashSec(dom+path) % (A->buckets-2)); //[1 .. cantBuckets - 1] Sacado de wikipedia, enlace de las diapos
-  if (h1 < 0) h1 += (A->buckets -1);
-  if (h2 < 0) h2 += (A->buckets -2);
-  int intento = 0;
-  int  pos = (h1 + h2*intento)%(A->buckets); 
-  bool esta = false;
-  while (A->tablaDomPathSeBorro[pos] || (A->tablaDomPath[pos] != NULL && !esta))
-  {
-    intento++;
-    if (A->tablaDomPath[pos] != NULL && A->tablaDomPath[pos]->dom == dom && A->tablaDomPath[pos]->path == path ) {
-      esta = true;
-    }
-    pos = (h1 + h2*intento) % (A->buckets); 
-    if (pos <= -1)
-    {
-      pos = pos * (-1);
-    }
-  }
-  return esta;
-  
-}
-
-void list_domain(Hash A, string dom){
-  int h1 = hash3(dom) % (A->buckets-1); // [0 .. cantBuckets - 1]
-  int h2 = 1+(hashSec(dom) % (A->buckets-2)); //[1 .. cantBuckets - 1] Sacado de wikipedia, enlace de las diapos
-  if (h1 < 0) h1 += (A->buckets -1);
-  if (h2 < 0) h2 += (A->buckets -2);
-  int intento = 0;
-  int  pos = (h1 + h2*intento)%(A->buckets); 
-  bool esta = false;
-  while (A->tablaDomSeBorro[pos] || (A->tablaDom[pos] != NULL && !esta))
-  {
-    intento++;
-    if (A->tablaDom[pos] != NULL && A->tablaDom[pos]->dom == dom ) {
-      esta = true;
-      NodoHashDom* aux = A->tablaDom[pos];
-      while(aux != NULL){
-        cout << aux->path << endl;
-        aux = aux -> sig;
-      }
-    }
-    pos = (h1 + h2*intento) % (A->buckets); 
-    if (pos <= -1)
-    {
-      pos = pos * (-1);
-    }
-  }
-  if (!esta)
-  {
-    cout << " " << endl;
-  }
-  
-}
-
-int size(Hash A){
-  return A->cantElem;
-}
+int size(Hash A) { return A->cantElem; }
