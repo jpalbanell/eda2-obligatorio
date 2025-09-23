@@ -1,4 +1,3 @@
-
 #include <cassert>
 #include <limits>
 #include <string>
@@ -81,7 +80,7 @@ Hash crear(int n) {
 
 // Busca (dom,path)
 // Recorre mientras HAY algo o HAY true en seBorro
-static int buscarDomPath(Hash A, const string& dom, const string& path) {
+static int buscarDomPath(Hash A, string& dom, string& path) {
     string key = dom + path;
     int b = A->buckets;
     int h1 = mod(hash3(key), b);
@@ -103,7 +102,7 @@ static int buscarDomPath(Hash A, const string& dom, const string& path) {
 }
 
 // Devuelve posición libre para insertar
-static int posicionInsercionDomPath(Hash A, const string& dom, const string& path) {
+static int posicionInsercionDomPath(Hash A, string& dom, string& path) {
     string key = dom + path;
     int b = A->buckets;
     int h1 = mod(hash3(key), b);
@@ -121,7 +120,7 @@ static int posicionInsercionDomPath(Hash A, const string& dom, const string& pat
     return pos;
 }
 
-static void putDomPath(Hash A, const string& dom, const string& path, const string& titulo, int tiempo) {
+static void putDomPath(Hash A, string& dom, string& path, string& titulo, int tiempo) {
     int pos = buscarDomPath(A, dom, path);
     if (pos != -1) {
         // actualizar
@@ -142,7 +141,7 @@ static void putDomPath(Hash A, const string& dom, const string& path, const stri
     }
 }
 
-static bool removeDomPath(Hash A, const string& dom, const string& path) {
+static bool removeDomPath(Hash A, string& dom, string& path) {
     int pos = buscarDomPath(A, dom, path);
     if (pos == -1) return false;
     delete A->tablaDomPath[pos];
