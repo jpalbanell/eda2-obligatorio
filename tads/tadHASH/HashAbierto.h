@@ -80,11 +80,13 @@ void putDomPath(Hash A, string& dom, string& path, string& titulo, int tiempo) {
     int h1 = mod(hash3(dom+path), b);
     int h2 = 1 + mod(hashSec(dom+path), b - 1);
     int pos = (h1 + h2) % b;
-    A->tablaDomPath[pos] = new NodoHashDomPath;
-    A->tablaDomPath[pos]-> path = path;
-    A->tablaDomPath[pos]-> dom = dom;
-    A->tablaDomPath[pos]-> titulo = titulo;
-    A->tablaDomPath[pos]-> tiempo = tiempo;
+    NodoHashDomPath* nuevo = new NodoHashDomPath;
+    nuevo-> path = path;
+    nuevo-> dom = dom;
+    nuevo-> titulo = titulo;
+    nuevo-> tiempo = tiempo;
+    nuevo-> sig = A->tablaDomPath[pos];
+    A->tablaDomPath[pos] = nuevo;
     NodoHashDomPath* actual = A->tablaDomPath[pos] ->sig;
     while (actual!=NULL)
     {
@@ -103,11 +105,13 @@ void put(Hash& A, string dom, string path, string titulo, int tiempo) {
     int h1 = mod(hash3(dom), b);
     int h2 = 1 + mod(hashSec(dom), b - 1);
     int pos = (h1 + h2) % b;
-    A->tablaDom[pos] = new NodoHashDom;
-    A->tablaDom[pos]-> path = path;
-    A->tablaDom[pos]-> dom = dom;
-    A->tablaDom[pos]-> titulo = titulo;
-    A->tablaDom[pos]-> tiempo = tiempo;
+    NodoHashDom* nuevo = new NodoHashDom;
+    nuevo-> path = path;
+    nuevo-> dom = dom;
+    nuevo-> titulo = titulo;
+    nuevo-> tiempo = tiempo;
+    nuevo-> sig = A->tablaDom[pos];
+    A->tablaDom[pos] = nuevo;
     NodoHashDom* actual = A->tablaDom[pos]->sig;
     bool actualizado = false;
     while (actual!=NULL)
