@@ -209,27 +209,19 @@ void list_domain(Hash A, string dom) {
     int b = A->buckets;
     int h1 = mod(hash3(dom), b);
     int h2 = 1 + mod(hashSec(dom), b - 1);
+    int pos = (h1 + h2) % b;
+    NodoHashDom* aux = A->tablaDom[pos];
+    bool tienePath = false;
 
-    int intento = 0;
-    int pos = (h1 + h2 * intento) % b;
-    NodoHashDom* head = NULL;
-
-    while (A->tablaDom[pos] != NULL || A->tablaDomSeBorro[pos]) {
-        if (A->tablaDom[pos] != NULL && A->tablaDom[pos]->dom == dom) {
-            head = A->tablaDom[pos];
-            break;
+    while (aux != NULL) {
+        if (aux->dom == dom) {
+            tienePath = true;
+            cout << aux -> path << " ";
         }
-        intento++;
-        pos = (h1 + h2 * intento) % b;
+        aux = aux ->sig;
     }
 
-    bool first = true;
-    for (NodoHashDom* p = head; p != NULL; p = p->sig) {
-        if (!first) cout << ' ';
-        cout << p->path;
-        first = false;
-    }
-    cout << "\n";
+    if(!tienePath) cout << " " << endl;
 }
 
 void clear_domain(Hash& A, string dom) {
