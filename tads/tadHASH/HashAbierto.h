@@ -170,69 +170,34 @@ void get(Hash A, string dom, string path) {
         }
         
     }
-    cout << "recurso_no_encontrado" << endl
+    cout << "recurso_no_encontrado" << endl;
     
 }
 
 void remove(Hash& A, string dom, string path) {
-    bool estaba = removeDomPath(A, dom, path);
-    if (!estaba) return;
-    A->cantElem -= 1;
-
-    int b = A->buckets;
-    int h1 = mod(hash3(dom), b);
-    int h2 = 1 + mod(hashSec(dom), b - 1);
-
-    int intento = 0;
-    int pos = (h1 + h2 * intento) % b;
-    int posDom = -1;
-
-    while (A->tablaDom[pos] != NULL || A->tablaDomSeBorro[pos]) {
-        if (A->tablaDom[pos] != NULL && A->tablaDom[pos]->dom == dom) { posDom = pos; break; }
-        intento++;
-        pos = (h1 + h2 * intento) % b;
-    }
-    if (posDom == -1) return; // ya no está el dominio
-
-    // quitar el nodo del path en la lista del dominio
-    NodoHashDom* cur = A->tablaDom[posDom];
-    NodoHashDom* prev = NULL;
-    while (cur != NULL && cur->path != path) { 
-      prev = cur; 
-      cur = cur->sig; }
-    if (cur == NULL) return;
-
-    if (prev != NULL) {
-      prev->sig = cur->sig;
-    }
-    else 
-    {
-      A->tablaDom[posDom] = cur->sig;
-    }
-    delete cur;
-
-    A->cantDom[posDom] -= 1;
-    if (A->tablaDom[posDom] == NULL) {
-        A->tablaDomSeBorro[posDom] = true;
-    }
+    
 }
 
 int count_domain(Hash A, string dom) {
     int b = A->buckets;
     int h1 = mod(hash3(dom), b);
     int h2 = 1 + mod(hashSec(dom), b - 1);
-
-    int intento = 0;
-    int pos = (h1 + h2 * intento) % b;
-
-    while (A->tablaDom[pos] != NULL || A->tablaDomSeBorro[pos]) {
-        if (A->tablaDom[pos] != NULL && A->tablaDom[pos]->dom == dom) {
-            return A->cantDom[pos];
+    int pos = (h1 + h2) % b;
+    NodoHashCantDom* aux = A->tablaCantDom[pos];
+    while (aux != NULL)
+    {
+        if (aux->dom == dom)
+        {
+            cout << aux ->cant << endl;
+            return;
         }
-        intento++;
-        pos = (h1 + h2 * intento) % b;
+        else
+        {
+            aux = aux -> sig;
+        }
+        
     }
-    return 0;
+    cout << 0 << endl;
 }
 
 bool contains(Hash A, string dom, string path) {
