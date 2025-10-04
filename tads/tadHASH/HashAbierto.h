@@ -152,12 +152,26 @@ void put(Hash& A, string dom, string path, string titulo, int tiempo) {
 }
 
 void get(Hash A, string dom, string path) {
-    int pos = buscarDomPath(A, dom, path);
-    if (pos != -1 && A->tablaDomPath[pos] != NULL) {
-        cout << A->tablaDomPath[pos]->titulo << " " << A->tablaDomPath[pos]->tiempo << "\n";
-    } else {
-        cout << "recurso_no_encontrado\n";
+    int b = A->buckets;
+    int h1 = mod(hash3(dom+path), b);
+    int h2 = 1 + mod(hashSec(dom+path), b - 1);
+    int pos = (h1 + h2) % b;
+    NodoHashDomPath* aux = A->tablaDomPath[pos];
+    while (aux != NULL)
+    {
+        if (aux->dom == dom && aux->path == path)
+        {
+            cout << aux -> titulo << " " << aux -> tiempo << endl;
+            return;
+        }
+        else
+        {
+            aux = aux -> sig;
+        }
+        
     }
+    cout << "recurso_no_encontrado" << endl
+    
 }
 
 void remove(Hash& A, string dom, string path) {
