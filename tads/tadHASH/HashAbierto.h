@@ -260,6 +260,7 @@ void clear(Hash& A) {
             string dom = A->tablaDom[i]->dom;
             clear_domain(A, dom);
         }
+        A->tablaCantDom[i] = 0;
     }
 }
 
