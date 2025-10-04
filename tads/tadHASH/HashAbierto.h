@@ -159,49 +159,82 @@ void get(Hash A, string dom, string path) {
         cout << "recurso_no_encontrado\n";
     }
 }
-
 void remove(Hash& A, string dom, string path) {
-    bool estaba = removeDomPath(A, dom, path);
-    if (!estaba) return;
-    A->cantElem -= 1;
-
     int b = A->buckets;
     int h1 = mod(hash3(dom), b);
     int h2 = 1 + mod(hashSec(dom), b - 1);
+    int pos = (h1 + h2) % b;
 
-    int intento = 0;
-    int pos = (h1 + h2 * intento) % b;
-    int posDom = -1;
-
-    while (A->tablaDom[pos] != NULL || A->tablaDomSeBorro[pos]) {
-        if (A->tablaDom[pos] != NULL && A->tablaDom[pos]->dom == dom) { posDom = pos; break; }
-        intento++;
-        pos = (h1 + h2 * intento) % b;
-    }
-    if (posDom == -1) return; // ya no está el dominio
-
-    // quitar el nodo del path en la lista del dominio
-    NodoHashDom* cur = A->tablaDom[posDom];
+    // --- tablaDom ---
+    NodoHashDom* actual = A->tablaDom[pos];
     NodoHashDom* prev = NULL;
-    while (cur != NULL && cur->path != path) { 
-      prev = cur; 
-      cur = cur->sig; }
-    if (cur == NULL) return;
+    bool borrado = false;
 
-    if (prev != NULL) {
-      prev->sig = cur->sig;
+    while (actual != NULL) {
+        if (actual->dom == dom && actual->path == path) {
+            NodoHashDom* aBorrar = actual;
+            
+            if (prev == NULL) {
+                A->tablaDom[pos] = actual->sig;
+            } else {
+                prev->sig = actual->sig;
+            }
+            actual = actual->sig;
+            delete aBorrar;
+            borrado = true;
+            break; 
+        }
+        prev = actual;
+        actual = actual->sig;
     }
-    else 
-    {
-      A->tablaDom[posDom] = cur->sig;
-    }
-    delete cur;
 
-    A->cantDom[posDom] -= 1;
-    if (A->tablaDom[posDom] == NULL) {
-        A->tablaDomSeBorro[posDom] = true;
+    NodoHashDomPath* actual2 = A->tablaDomPath[pos];
+    NodoHashDomPath* prev2 = NULL;
+
+    while (actual2 != NULL) {
+        if (actual2->dom == dom && actual2->path == path) {
+            NodoHashDomPath* aBorrar2 = actual2;
+            if (prev2 == NULL) {
+                A->tablaDomPath[pos] = actual2->sig;
+            } else {
+                prev2->sig = actual2->sig;
+            }
+            actual2 = actual2->sig; 
+            delete aBorrar2;
+            borrado = true;
+            break;
+        }
+        prev2 = actual2;
+        actual2 = actual2->sig;
+    }
+
+    if (borrado) {
+        if (A->cantElem > 0) A->cantElem--;
+
+        NodoHashCantDom* actual3 = A->tablaCantDom[pos];
+        NodoHashCantDom* prev3 = NULL;
+
+        while (actual3 != NULL) {
+            if (actual3->dom == dom) {
+                actual3->cant--;
+                if (actual3->cant <= 0) {
+                    NodoHashCantDom* aBorrar3 = actual3;
+                    if (prev3 == NULL) {
+                        A->tablaCantDom[pos] = actual3->sig;
+                    } else {
+                        prev3->sig = actual3->sig;
+                    }
+                    actual3 = actual3->sig;
+                    delete aBorrar3;
+                }
+                break;
+            }
+            prev3 = actual3;
+            actual3 = actual3->sig;
+        }
     }
 }
+
 
 int count_domain(Hash A, string dom) {
     int b = A->buckets;
@@ -222,8 +255,17 @@ int count_domain(Hash A, string dom) {
 }
 
 bool contains(Hash A, string dom, string path) {
-    int pos = buscarDomPath(A, dom, path);
-    return (pos != -1 && A->tablaDomPath[pos] != NULL);
+    int b = A->buckets;
+    int h1 = mod(hash3(dom), b);
+    int h2 = 1 + mod(hashSec(dom), b - 1);
+    int pos = (h1 + h2) % b;
+    NodoHashDomPath* actual = A->tablaDomPath[pos];
+    while (actual!=NULL)
+    {
+        if (actual->dom == dom && actual->path == path) return true;
+        actual = actual->sig;
+    }
+    return false;
 }
 
 void list_domain(Hash A, string dom) {
@@ -254,34 +296,85 @@ void list_domain(Hash A, string dom) {
 }
 
 void clear_domain(Hash& A, string dom) {
-    int b = A->buckets;
+    int b  = A->buckets;
     int h1 = mod(hash3(dom), b);
     int h2 = 1 + mod(hashSec(dom), b - 1);
+    int pos = (h1 + h2) % b;
 
-    int intento = 0;
-    int pos = (h1 + h2 * intento) % b;
-    int posDom = -1;
+    int eliminados = 0;
 
-    while (A->tablaDom[pos] != NULL || A->tablaDomSeBorro[pos]) {
-        if (A->tablaDom[pos] != NULL && A->tablaDom[pos]->dom == dom) { posDom = pos; break; }
-        intento++;
-        pos = (h1 + h2 * intento) % b;
+   
+    NodoHashDom* actual = A->tablaDom[pos];
+    NodoHashDom* prev   = NULL;
+
+    while (actual != NULL) {
+        if (actual->dom == dom) {
+            NodoHashDom* aBorrar = actual;
+            if (prev == NULL) {
+                A->tablaDom[pos] = actual->sig;   
+            } else {
+                prev->sig = actual->sig;          
+            }
+            actual = actual->sig;                 
+            delete aBorrar;
+            eliminados++;
+            // NO movemos prev cuando borramos
+        } else {
+            prev = actual;
+            actual = actual->sig;
+        }
     }
-    if (posDom == -1 || A->tablaDom[posDom] == NULL) return;
 
-    // borra toda la lista y entradas (dom+path)
-    NodoHashDom* p = A->tablaDom[posDom];
-    while (p != NULL) {
-        removeDomPath(A, dom, p->path);
-        A->cantElem -= 1;
-        NodoHashDom* nxt = p->sig;
-        delete p;
-        p = nxt;
+    
+    NodoHashDomPath* actual2 = A->tablaDomPath[pos];
+    NodoHashDomPath* prev2   = NULL;
+
+    while (actual2 != NULL) {
+        if (actual2->dom == dom) {
+            NodoHashDomPath* aBorrar2 = actual2;
+            if (prev2 == NULL) {
+                A->tablaDomPath[pos] = actual2->sig;
+            } else {
+                prev2->sig = actual2->sig;
+            }
+            actual2 = actual2->sig;
+            delete aBorrar2;
+            
+        } else {
+            prev2 = actual2;
+            actual2 = actual2->sig;
+        }
     }
-    A->tablaDom[posDom] = NULL;
-    A->cantDom[posDom] = 0;
-    A->tablaDomSeBorro[posDom] = true;
+
+    
+    if (eliminados > 0) {
+        
+        A->cantElem -= eliminados;
+        if (A->cantElem < 0) A->cantElem = 0; 
+
+        
+        NodoHashCantDom* actual3 = A->tablaCantDom[pos];
+        NodoHashCantDom* prev3   = NULL;
+
+        while (actual3 != NULL) {
+            if (actual3->dom == dom) {
+                NodoHashCantDom* aBorrar3 = actual3;
+                if (prev3 == NULL) {
+                    A->tablaCantDom[pos] = actual3->sig;
+                } else {
+                    prev3->sig = actual3->sig;
+                }
+                actual3 = actual3->sig;
+                delete aBorrar3;
+                break;
+            } else {
+                prev3 = actual3;
+                actual3 = actual3->sig;
+            }
+        }
+    }
 }
+
 
 void clear(Hash& A) {
     for (int i = 0; i < A->buckets; ++i) {
