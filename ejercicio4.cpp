@@ -20,6 +20,7 @@ int main()
         {
             int num;
             cin >> num;
+            
             agregarFinalLista(H, i, num);
         }
     }
@@ -27,7 +28,9 @@ int main()
     {
         agregarHeap(H, cabezal(H, i));
     }
-    
-    
+    while (!esVacio(H))
+    {
+        cout << eliminar(H) << endl;
+    }
     return 0;
 }
