@@ -2,7 +2,6 @@
 #include <string>
 #include <iostream>
 #include <limits>
-#include "tads/tadKruskal/grafoLA.h"
 #include "tads/tadMFset/MFset.h"
 #include "tads/tadHeap/minHeapAristas.h"
 

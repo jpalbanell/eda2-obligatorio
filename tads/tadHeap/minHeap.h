@@ -28,13 +28,13 @@ typedef RepresentacionMinHeap* MinHeap;
 
 MinHeap crearHeap(int K){
     MinHeap H = new RepresentacionMinHeap;
-    H->limite = K + 1;             // heap 1..K
+    H->limite = K + 1;
     H->proxPosLibre = 1;
 
-    H->arrayListas = new lista*[K];        // listas 0..K-1
+    H->arrayListas = new lista*[K];
     for (int i = 0; i < K; i++) H->arrayListas[i] = NULL;
 
-    H->heap = new nodoLista*[K + 1];       // heap 0..K (0 sin uso)
+    H->heap = new nodoLista*[K + 1];
     for (int i = 0; i <= K; i++) H->heap[i] = NULL;
 
     return H;
@@ -42,9 +42,6 @@ MinHeap crearHeap(int K){
 
 
 void agregarFinalLista(MinHeap& H, int l, int e){
-    // guard simple:
-    // if (l < 0 || l >= H->limite-1) return;
-
     nodoLista* nuevo = new nodoLista;
     nuevo->dato = e;
     nuevo->nroLista = l;
@@ -68,10 +65,10 @@ nodoLista* cabezal(MinHeap& H, int l){
     nodoLista* ret = H->arrayListas[l]->raiz;
     H->arrayListas[l]->raiz = ret->sig;
     if (H->arrayListas[l]->raiz == NULL) {
-        H->arrayListas[l]->final = NULL;   // quedó vacía
+        H->arrayListas[l]->final = NULL;
     }
-    ret->sig = NULL; // aislar el nodo que vas a meter al heap
-    return ret;      // NO lo borres acá
+    ret->sig = NULL;
+    return ret;
 }
 
 void swap(MinHeap& H, int padre, int pos){
@@ -79,6 +76,7 @@ void swap(MinHeap& H, int padre, int pos){
     H->heap[padre] = H->heap[pos];
     H->heap[pos] = aux;
 }
+
 void flotar(MinHeap& H, int pos){
    if(pos > 1){
     int padre = pos/2;
@@ -89,9 +87,8 @@ void flotar(MinHeap& H, int pos){
    }
 }
 
-
 void agregarHeap(MinHeap& H, nodoLista* nodo){
-    if (!nodo) return;                 // <-- evitar NULL
+    if (!nodo) return;      
     if (H->proxPosLibre == H->limite){
         cout << "error" << endl;
         return;
@@ -100,9 +97,6 @@ void agregarHeap(MinHeap& H, nodoLista* nodo){
     flotar (H, H->proxPosLibre);
     H->proxPosLibre++;
 }
-
-
-
 
 void hundir(MinHeap& H, int pos){
     int hijoIzq = pos *2;
@@ -128,24 +122,21 @@ bool esVacio(MinHeap H){
 }
 
 int eliminar(MinHeap& H){
-    if (H->heap[1] == NULL) return -1;   // o if (esVacio(H)) return -1;
+    if (H->heap[1] == NULL) return -1;
 
-    int l    = H->heap[1]->nroLista;
+    int l = H->heap[1]->nroLista;
     int dato = H->heap[1]->dato;
 
     nodoLista* aBorrar = H->heap[1];
 
-    // mover el último a la raíz y achicar
     H->proxPosLibre--;
     H->heap[1] = H->heap[H->proxPosLibre];
     H->heap[H->proxPosLibre] = NULL;
 
     delete aBorrar;
 
-    // restaurar propiedad de heap
     if (!esVacio(H)) hundir(H, 1);
 
-    // ahora sí, traer el próximo de la misma lista (si existe)
     agregarHeap(H, cabezal(H, l));
 
     return dato;

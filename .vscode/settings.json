@@ -7,6 +7,7 @@
         "iostream": "cpp",
         "__hash_table": "cpp",
         "deque": "cpp",
-        "ios": "cpp"
+        "ios": "cpp",
+        "limits": "cpp"
     }
 }
