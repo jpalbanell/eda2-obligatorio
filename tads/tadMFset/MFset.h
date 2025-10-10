@@ -22,9 +22,10 @@ MFset crear(int n){
         nuevo -> padre[i] = i;
         nuevo -> altura[i] = 1;
     }
+    return nuevo;
 }
 
-int buscar(MFset mf, int dato){
+int buscar(MFset& mf, int dato){
     if (mf->padre[dato] == dato)
     {
         return dato;
@@ -33,10 +34,10 @@ int buscar(MFset mf, int dato){
     return mf->padre[dato];
 }
 
-void unir(MFset mf, int dato1, int dato2){
+bool unir(MFset& mf, int dato1, int dato2){
     int padreDato1 = buscar(mf, dato1);
     int padreDato2 = buscar(mf, dato2);
-    if(padreDato1 == padreDato2) return;
+    if(padreDato1 == padreDato2) return false;
 
     if (mf->altura[padreDato1] > mf->altura[padreDato2])
     {
@@ -48,4 +49,5 @@ void unir(MFset mf, int dato1, int dato2){
         mf->padre[padreDato2] = padreDato1;
         mf->altura[padreDato1]++;
     }
+    return true;
 }

@@ -12,7 +12,6 @@ struct nodoGrafo{
 
 };
 
-
 struct RepresentaciongrafoLA{
     nodoGrafo** tabla;
     int cantV;
@@ -23,7 +22,7 @@ typedef RepresentaciongrafoLA* grafoLA;
 
 grafoLA crear(int V, int E){
     grafoLA nuevo = new RepresentaciongrafoLA;
-    nuevo->tabla= new nodoGrafo*[V];
+    nuevo->tabla= new nodoGrafo*[V+1];
     for (int i = 0; i < V; i++) nuevo->tabla[i] = NULL;
     return nuevo;
 }
