@@ -6,12 +6,8 @@
 
 using namespace std;
 
-int pos(string estudiante, Hash criterio){
-    return get(criterio, estudiante);
-}
-
-string* intercalar(string* ord1, int n1, string* ord2, int n2, Hash criterio, long& cambios) {
-    string* ret = new string[n1 + n2];
+int* intercalar(int* ord1, int n1, int* ord2, int n2, Hash criterio, long long& cambios) {
+    int* ret = new int[n1 + n2];
 
     int i = 0;
     int j = 0;
@@ -19,7 +15,7 @@ string* intercalar(string* ord1, int n1, string* ord2, int n2, Hash criterio, lo
     int cambiosIzq = n1;
     while (i<n1 && j<n2)
     {
-        if (pos(ord1[i], criterio) > pos(ord2[j], criterio))
+        if (ord1[i] > ord2[j])
         {
             ret[k]=ord2[j];
             k++; j++;
@@ -45,17 +41,17 @@ string* intercalar(string* ord1, int n1, string* ord2, int n2, Hash criterio, lo
     return ret;
 }
 
-string* mergeSortAlumno(string* aOrdenar, int largoCriterio, Hash criterio, int inicio, int fin, long& cambios){
+int* mergeSortAlumno(int* aOrdenar, int largoCriterio, Hash criterio, int inicio, int fin, long long& cambios){
     if (inicio == fin) {
-        string* ret = new string [1];
+        int* ret = new int [1];
         ret[0] = aOrdenar[inicio];
         return ret;
     }
 
     int mitad = (inicio + fin)/2;
 
-    string* ord1 = mergeSortAlumno(aOrdenar, largoCriterio, criterio, inicio, mitad, cambios);
-    string* ord2 = mergeSortAlumno(aOrdenar, largoCriterio, criterio, mitad+1, fin, cambios);
+    int* ord1 = mergeSortAlumno(aOrdenar, largoCriterio, criterio, inicio, mitad, cambios);
+    int* ord2 = mergeSortAlumno(aOrdenar, largoCriterio, criterio, mitad+1, fin, cambios);
     
     int n1 = mitad - inicio + 1;
     int n2 = fin - mitad;
@@ -76,13 +72,16 @@ int main()
         put(criterio, nombre, i);
     }
     
-    string* alumnosAyudante = new string[N];
+    int* alumnosAyudante = new int[N];
     for (int i = 0; i < N; i++) {
-        cin >> alumnosAyudante[i];
+        string alumno;
+        cin >> alumno;
+        int pos = get(criterio, alumno);
+        alumnosAyudante[i] = pos;
     }
     
-    long cantSwap = 0;
-    //usamos long porque int genera overflow
+    long long cantSwap = 0;
+    //usamos long long porque int genera overflow
     alumnosAyudante = mergeSortAlumno(alumnosAyudante, N, criterio, 0, N-1, cantSwap);
     cout << cantSwap << endl;
     return 0;
