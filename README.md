@@ -1,32 +1,37 @@
-# Plantilla para Obligatorio de C++
+# Obligatorio de Estructuras de Datos y Algoritmos 2
 
-Este repositorio es una plantilla para comenzar los trabajos obligatorios de la materia de Estructura de Datos y Algoritmos 2 en C++.
+Trabajo obligatorio de la materia Estructuras de Datos y Algoritmos 2, Ingeniería en Sistemas, Universidad ORT Uruguay (2025). Hecho en equipo de dos, en C++ sin STL para las estructuras: todos los TADs están implementados desde cero.
 
-## Estructura del Repositorio
+## Estructuras implementadas (`tads/`)
 
-- `funciones/`: Carpeta para funciones auxiliares que puedes utilizar en tus ejercicios.
-- `tads/`: Carpeta para Tipos Abstractos de Datos (TADs) que puedes necesitar para los ejercicios.
-- `ejercicioX.cpp`: Archivos fuente de plantilla para cada uno de los ejercicios del obligatorio.
+- **AVL** — árbol binario de búsqueda balanceado
+- **Hash abierto y hash cerrado** — tablas con encadenamiento y con direccionamiento abierto
+- **Min-heap y max-heap** — con variantes para aristas (Kruskal) y para potencias
+- **MFSet (union-find)** — conjuntos disjuntos con unión y búsqueda
+- **Lista** genérica
 
-## Cómo Usar esta Plantilla
+## Ejercicios
 
-Para empezar a trabajar con esta plantilla, haz lo siguiente:
+| # | Técnica | Estructura |
+|---|---------|------------|
+| 1 | Inserción, búsqueda y recorridos | AVL |
+| 2 | Conteo con tabla hash | Hash |
+| 3 | Conteo con tabla hash | Hash abierto |
+| 4 | K-way merge / selección | Min-heap |
+| 5 | Árbol de cubrimiento mínimo (Kruskal) | MFSet + min-heap de aristas |
+| 6 | Optimización con cola de prioridad | Max-heap |
+| 7 | Merge sort con conteo de intercambios | Hash cerrado |
+| 8 | Programación dinámica con memoización 3D | — |
+| 9 | Programación dinámica | — |
+| 10 | Backtracking con poda | — |
 
-1. Haz clic en el botón **Use this template** para crear un nuevo repositorio en tu cuenta de GitHub.
-2. Clona el repositorio en tu entorno local.
-3. Elige el ejercicio que deseas comenzar y abre el archivo `.cpp` correspondiente.
-4. Escribe tu código en la sección indicada del archivo.
+Cada ejercicio lee de entrada estándar y escribe en salida estándar. Los casos de prueba están en `tests/ejercicioN/` con entradas de 10 hasta 1.000.000 de elementos, más casos especiales.
 
-## Compilación y Ejecución
-
-Para compilar tu código, puedes usar el siguiente comando en la terminal:
+## Compilar y probar
 
 ```bash
-g++ -std=c++11 -o nombre_del_ejecutable tu_archivo_fuente.cpp
+g++ -std=c++11 -O2 -o ejercicio5 ejercicio5.cpp
+./ejercicio5 < tests/ejercicio5/1000.in.txt | diff - tests/ejercicio5/1000.out.txt
 ```
 
-Para ejecutar tu programa:
-
-```bash
-./nombre_del_ejecutable
-```
+El informe con el análisis de complejidad de cada solución está en `eya informe-2.pdf`.
